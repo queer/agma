@@ -4,11 +4,16 @@ defmodule Agma.Application do
   use Application
 
   def start(_type, _args) do
+    dsn =
+      :agma
+      |> Application.get_env(:singyeong_dsn)
+      |> Singyeong.parse_dsn
+
     children = [
       AgmaWeb.Telemetry,
       {Phoenix.PubSub, name: Agma.PubSub},
       AgmaWeb.Endpoint,
-      {Singyeong.Client, Singyeong.parse_dsn("singyeong://agma:password@localhost:4567")},
+      {Singyeong.Client, dsn},
       Singyeong.Producer,
       Agma.Consumer,
       Agma.Stats,
