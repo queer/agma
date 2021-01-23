@@ -41,6 +41,9 @@ defmodule Agma.MixProject do
       {:singyeong, "~> 0.2.0"},
       # gun 1.3.3 needs a lower version :pensive:
       {:cowlib, "~> 2.9.0", override: true},
+      {:tesla, "~> 1.4"},
+      {:castore, "~> 0.1"},
+      {:typed_struct, "~> 0.2.1"},
     ]
   end
 

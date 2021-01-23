@@ -1,11 +1,13 @@
 defmodule Agma.Stats do
   use GenServer
+  alias Agma.Docker
 
   def start_link(opts) do
     GenServer.start_link __MODULE__, opts, name: __MODULE__
   end
 
   def init(opts) do
+    Docker.containers()
     tick()
     {:ok, opts}
   end
