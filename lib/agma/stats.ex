@@ -1,16 +1,29 @@
 defmodule Agma.Stats do
   use GenServer
   alias Agma.Docker
+  require Logger
 
   def start_link(opts) do
     GenServer.start_link __MODULE__, opts, name: __MODULE__
   end
 
-  def init(opts) do
+  def container_names do
     Docker.containers()
+    |> elem(1)
+    |> Enum.map(&(&1.names))
+  end
+
+  def container_ids do
+    Docker.containers()
+    |> elem(1)
+    |> Enum.map(&(&1.id))
+  end
+
+  def init(opts) do
+    Logger.info "[STATS] I'm currently mangling: #{inspect Enum.zip(container_ids(), container_names()), pretty: true}"
     tick()
     {:ok, opts}
-  end
+3  end
 
   def handle_info(:tick, state) do
     cpus = :erlang.system_info :logical_processors

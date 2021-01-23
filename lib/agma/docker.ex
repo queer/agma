@@ -14,9 +14,7 @@ defmodule Agma.Docker do
           body
           |> Utils.snake()
           |> Enum.map(&Utils.atomify(&1, [:networks]))
-          |> Enum.filter(&("/postgres_ppl-moe" in &1[:names]))
           |> Enum.map(&Container.from/1)
-          |> IO.inspect(pretty: true, label: "### CONTAINER ###")
 
         {:ok, containers}
 
