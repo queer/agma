@@ -35,10 +35,10 @@ defmodule Agma.Docker do
   """
   def create(image, name, command \\ nil) do
     # TODO: Error-check image names
-    if not String.match?(name, ~r/^/?[a-zA-Z0-9][a-zA-Z0-9_.-]+$/) do
+    if not String.match?(name, ~r/^\/?[a-zA-Z0-9][a-zA-Z0-9_.-]+$/) do
       {:error, :invalid_name}
     else
-      opts = %{"Image" => image}
+      opts = %{"Image" => image, "Labels" => %{Labels.managed() => "true"}}
       opts = if command, do: Map.put(opts, "Cmd", command), else: opts
 
       case post("/containers/create?name=#{name}", opts) do
@@ -78,7 +78,7 @@ defmodule Agma.Docker do
   end
 
   defp container_state_request(kind, name_or_id) do
-    case post("/containers/#{name_or_id}/#{kind}") do
+    case post("/containers/#{name_or_id}/#{kind}", nil) do
       {:ok, %Tesla.Env{status: 204}} ->
         {:ok, nil}
 
