@@ -7,23 +7,11 @@ defmodule Agma.Stats do
     GenServer.start_link __MODULE__, opts, name: __MODULE__
   end
 
-  def container_names do
-    Docker.containers()
-    |> elem(1)
-    |> Enum.map(&(&1.names))
-  end
-
-  def container_ids do
-    Docker.containers()
-    |> elem(1)
-    |> Enum.map(&(&1.id))
-  end
-
   def init(opts) do
-    Logger.info "[STATS] I'm currently mangling: #{inspect Enum.zip(container_ids(), container_names()), pretty: true}"
+    Logger.info "[STATS] I'm mangling #{length Docker.managed_container_ids()} containers at boot."
     tick()
     {:ok, opts}
-3  end
+  end
 
   def handle_info(:tick, state) do
     cpus = :erlang.system_info :logical_processors
@@ -50,6 +38,30 @@ defmodule Agma.Stats do
       mem_free: %{
         type: "integer",
         value: mem_free,
+      },
+      container_names: %{
+        type: "list",
+        value: Docker.container_names(),
+      },
+      container_ids: %{
+        type: "list",
+        value: Docker.container_ids(),
+      },
+      running_container_names: %{
+        type: "list",
+        value: Docker.running_container_names(),
+      },
+      running_container_ids: %{
+        type: "list",
+        value: Docker.running_container_ids(),
+      },
+      managed_container_ids: %{
+        type: "list",
+        value: Docker.managed_container_ids(),
+      },
+      managed_container_names: %{
+        type: "list",
+        value: Docker.managed_container_names(),
       },
     }
     tick()
