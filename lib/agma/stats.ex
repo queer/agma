@@ -14,6 +14,7 @@ defmodule Agma.Stats do
   end
 
   def handle_info(:tick, state) do
+    # TODO: Track resource limit usage so that it can be queried against in singyeong
     cpus = :erlang.system_info :logical_processors
     cpu_util = :cpu_sup.util()
 
@@ -63,6 +64,10 @@ defmodule Agma.Stats do
         type: "list",
         value: Docker.managed_container_names(),
       },
+      container_count: %{
+        type: "integer",
+        value: Enum.count(Docker.managed_container_ids()),
+      }
     }
     tick()
     {:noreply, state}

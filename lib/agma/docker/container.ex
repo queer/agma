@@ -190,7 +190,8 @@ defmodule Agma.Docker.Container do
       | ports: ports(json.ports),
         host_config: host_config(json.host_config),
         network_settings: network_settings(json.network_settings),
-        mounts: mounts(json.mounts)
+        mounts: mounts(json.mounts),
+        labels: json.labels
     }
   end
 

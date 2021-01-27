@@ -2,6 +2,7 @@ defmodule Agma.Docker do
   use Tesla
   alias Agma.Docker.{Container, Labels}
   alias Agma.Utils
+  alias Mahou.Format.App
 
   plug Tesla.Middleware.BaseUrl, "http+unix://%2Fvar%2Frun%2Fdocker.sock/v1.41"
   plug Tesla.Middleware.Headers, [{"content-type", "application/json"}]
@@ -20,7 +21,7 @@ defmodule Agma.Docker do
         containers =
           body
           |> Utils.snake()
-          |> Enum.map(&Utils.atomify(&1, [:networks]))
+          |> Enum.map(&Utils.atomify(&1, [:networks, :labels]))
           |> Enum.map(&Container.from/1)
 
         {:ok, containers}
@@ -33,12 +34,20 @@ defmodule Agma.Docker do
   @doc """
   Create a new
   """
-  def create(image, name, command \\ nil) do
+  def create(image, name, labels, command \\ nil) do
     # TODO: Error-check image names
     if not String.match?(name, ~r/^\/?[a-zA-Z0-9][a-zA-Z0-9_.-]+$/) do
       {:error, :invalid_name}
     else
-      opts = %{"Image" => image, "Labels" => %{Labels.managed() => "true"}}
+      opts =
+        %{
+          "Image" => image,
+          "Labels" => Map.merge(%{Labels.managed() => "true"}, labels),
+          "HostConfig" => %{
+            "AutoRemove" => true,
+          },
+        }
+
       opts = if command, do: Map.put(opts, "Cmd", command), else: opts
 
       case post("/containers/create?name=#{name}", opts) do
@@ -131,4 +140,7 @@ defmodule Agma.Docker do
   def managed_container_ids do
     Enum.map managed_containers(), &(&1.id)
   end
+
+  def app_name(%App{name: name, namespace: ns}), do: app_name name, ns
+  def app_name(name, ns), do: "mahou-#{ns || "default"}_#{name}"
 end
