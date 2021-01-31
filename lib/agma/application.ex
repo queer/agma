@@ -4,20 +4,16 @@ defmodule Agma.Application do
   use Application
 
   def start(_type, _args) do
-    dsn =
-      :agma
-      |> Application.get_env(:singyeong_dsn)
-      |> Singyeong.parse_dsn
+    dsn = Application.get_env :agma, :singyeong_dsn
 
-    children = [
-      AgmaWeb.Telemetry,
-      {Phoenix.PubSub, name: Agma.PubSub},
-      AgmaWeb.Endpoint,
-      {Singyeong.Client, dsn},
-      Singyeong.Producer,
-      Agma.Consumer,
-      Agma.Stats,
-    ]
+    children =
+      [
+        AgmaWeb.Telemetry,
+        {Phoenix.PubSub, name: Agma.PubSub},
+        AgmaWeb.Endpoint,
+      ]
+      ++ Mahou.Singyeong.child_specs(dsn, Agma.Consumer)
+      ++ [Agma.Stats]
 
     opts = [strategy: :one_for_one, name: Agma.Supervisor]
     Supervisor.start_link(children, opts)

@@ -1,16 +1,25 @@
 defmodule Agma.Stats do
   use GenServer
   alias Agma.Docker
+  alias Mahou.Docs
+  alias Mahou.Message.{ChangeContainerStatus, CreateContainer}
   require Logger
 
   def start_link(opts) do
     GenServer.start_link __MODULE__, opts, name: __MODULE__
   end
 
-  def init(opts) do
+  def init(_) do
     Logger.info "[STATS] I'm mangling #{length Docker.managed_container_ids()} containers at boot."
     tick()
-    {:ok, opts}
+    docs =
+      Docs.docs_metadata [
+        input_messages: [ChangeContainerStatus, CreateContainer],
+        output_messages: [],
+        phx_routers: [AgmaWeb.Router]
+      ]
+
+    {:ok, %{docs: docs}}
   end
 
   def handle_info(:tick, state) do
@@ -23,7 +32,7 @@ defmodule Agma.Stats do
       free_memory: mem_free,
     } = Map.new :memsup.get_system_memory_data()
 
-    Singyeong.Client.update_metadata %{
+    %{
       cpu_count: %{
         type: "integer",
         value: cpus,
@@ -67,8 +76,12 @@ defmodule Agma.Stats do
       container_count: %{
         type: "integer",
         value: Enum.count(Docker.managed_container_ids()),
-      }
+      },
     }
+    |> Map.merge(%{
+      Docs.docs_key() => state.docs,
+    })
+    |> Singyeong.Client.update_metadata
     tick()
     {:noreply, state}
   end

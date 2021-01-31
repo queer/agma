@@ -34,7 +34,7 @@ defmodule Agma.Docker do
   @doc """
   Create a new
   """
-  def create(image, name, labels, command \\ nil) do
+  def create(image, name, labels, env, command \\ nil) do
     # TODO: Error-check image names
     if not String.match?(name, ~r/^\/?[a-zA-Z0-9][a-zA-Z0-9_.-]+$/) do
       {:error, :invalid_name}
@@ -46,6 +46,7 @@ defmodule Agma.Docker do
           "HostConfig" => %{
             "AutoRemove" => true,
           },
+          "Env": Enum.map(env, fn {k, v} -> "#{k}=#{v}" end)
         }
 
       opts = if command, do: Map.put(opts, "Cmd", command), else: opts

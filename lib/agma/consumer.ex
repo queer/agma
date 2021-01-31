@@ -42,7 +42,7 @@ defmodule Agma.Consumer do
     Logger.info "deploy: apps: #{Enum.count apps} total"
     for app <- apps do
       name = Docker.app_name app
-      Docker.create app.image, name, %{Labels.namespace() => app.namespace}
+      Docker.create app.image, name, %{Labels.namespace() => app.namespace}, app.env
       Logger.info "deploy: app: created #{name}"
     end
     for app <- apps do
