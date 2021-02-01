@@ -34,23 +34,58 @@ defmodule Agma.Docker do
   @doc """
   Create a new
   """
-  def create(image, name, labels, env, command \\ nil) do
+  def create(%App{
+    id: _,
+    name: name,
+    namespace: ns,
+    image: image,
+    limits: _,
+    env: env,
+    inner_port: inner_port,
+  }) do
     # TODO: Error-check image names
     if not String.match?(name, ~r/^\/?[a-zA-Z0-9][a-zA-Z0-9_.-]+$/) do
       {:error, :invalid_name}
     else
+      port = 6666
+      labels =
+        %{
+          Labels.namespace() => ns || "default",
+          Labels.managed() => "true",
+        }
+      host_config =
+        %{
+          "AutoRemove" => true,
+        }
+
+      host_config =
+        if inner_port do
+          ports =
+            %{
+              "#{inner_port}/tcp" => [%{
+                "HostPort" => Integer.to_string(port)
+              }],
+              "#{inner_port}/udp" => [%{
+                "HostPort" => Integer.to_string(port)
+              }],
+            }
+
+          Map.put host_config, "PortBindings", ports
+        else
+          host_config
+        end
+
       opts =
         %{
           "Image" => image,
-          "Labels" => Map.merge(%{Labels.managed() => "true"}, labels),
-          "HostConfig" => %{
-            "AutoRemove" => true,
-          },
-          "Env": Enum.map(env, fn {k, v} -> "#{k}=#{v}" end)
+          "Labels" => labels,
+          "HostConfig" => host_config,
+          "Env" => Enum.map((env || %{}), fn {k, v} -> "#{k}=#{v}" end),
         }
 
-      opts = if command, do: Map.put(opts, "Cmd", command), else: opts
+      # opts = if command, do: Map.put(opts, "Cmd", command), else: opts
 
+      name = app_name name, ns
       case post("/containers/create?name=#{name}", opts) do
         {:ok, %Tesla.Env{status: 201, body: body}} ->
           {:ok, body}

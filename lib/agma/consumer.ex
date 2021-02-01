@@ -1,7 +1,6 @@
 defmodule Agma.Consumer do
   use Singyeong.Consumer
   alias Agma.Docker
-  alias Agma.Docker.Labels
   alias Mahou.Message
   alias Mahou.Message.{
     ChangeContainerStatus,
@@ -42,12 +41,13 @@ defmodule Agma.Consumer do
     Logger.info "deploy: apps: #{Enum.count apps} total"
     for app <- apps do
       name = Docker.app_name app
-      Docker.create app.image, name, %{Labels.namespace() => app.namespace}, app.env
+      {:ok, res} = Docker.create app
       Logger.info "deploy: app: created #{name}"
+      Logger.debug "deploy: app: #{name}: #{inspect res, pretty: true}"
     end
     for app <- apps do
       name = Docker.app_name app
-      Docker.start name
+      {:ok, _} = Docker.start name
       Logger.info "deploy: app: started #{name}"
     end
   end
@@ -57,8 +57,8 @@ defmodule Agma.Consumer do
     app = Docker.app_name name, ns
     Logger.info "status: app: #{app}: sending :#{cmd}"
     case cmd do
-      :stop -> Docker.stop app
-      :kill -> Docker.kill app
+      :stop -> {:ok, _} = Docker.stop app
+      :kill -> {:ok, _} = Docker.kill app
     end
   end
 end

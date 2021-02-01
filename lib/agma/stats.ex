@@ -11,7 +11,9 @@ defmodule Agma.Stats do
 
   def init(_) do
     Logger.info "[STATS] I'm mangling #{length Docker.managed_container_ids()} containers at boot."
+
     tick()
+
     docs =
       Docs.docs_metadata [
         input_messages: [ChangeContainerStatus, CreateContainer],
@@ -82,7 +84,9 @@ defmodule Agma.Stats do
       Docs.docs_key() => state.docs,
     })
     |> Singyeong.Client.update_metadata
+
     tick()
+
     {:noreply, state}
   end
 
