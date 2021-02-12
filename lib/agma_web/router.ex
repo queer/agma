@@ -7,5 +7,10 @@ defmodule AgmaWeb.Router do
 
   scope "/api", AgmaWeb do
     pipe_through :api
+
+    scope "/v1" do
+      post "/create", ContainerController, :create
+      post "/status", ContainerController, :change_status
+    end
   end
 end

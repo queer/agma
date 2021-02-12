@@ -47,12 +47,16 @@ defmodule Agma.Docker do
     if not String.match?(name, ~r/^\/?[a-zA-Z0-9][a-zA-Z0-9_.-]+$/) do
       {:error, :invalid_name}
     else
+
+      # TODO: Iterate and find first available
       port = 6666
+
       labels =
         %{
           Labels.namespace() => ns || "default",
           Labels.managed() => "true",
         }
+
       host_config =
         %{
           "AutoRemove" => true,

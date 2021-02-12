@@ -12,15 +12,16 @@ defmodule Agma.Application do
         {Phoenix.PubSub, name: Agma.PubSub},
         AgmaWeb.Endpoint,
       ]
-      ++ Mahou.Singyeong.child_specs(dsn, Agma.Consumer)
+      ++ Mahou.Singyeong.supervisor(dsn, Agma.Consumer)
       ++ [Agma.Stats]
 
     opts = [strategy: :one_for_one, name: Agma.Supervisor]
-    Supervisor.start_link(children, opts)
+
+    Supervisor.start_link children, opts
   end
 
   def config_change(changed, _new, removed) do
-    AgmaWeb.Endpoint.config_change(changed, removed)
+    AgmaWeb.Endpoint.config_change changed, removed
     :ok
   end
 end
