@@ -2,7 +2,6 @@ defmodule Agma.Stats do
   use GenServer
   alias Agma.Docker
   alias Mahou.Docs
-  alias Mahou.Message.{ChangeContainerStatus, CreateContainer}
   require Logger
 
   def start_link(opts) do
@@ -14,12 +13,7 @@ defmodule Agma.Stats do
 
     tick()
 
-    docs =
-      Docs.docs_metadata [
-        input_messages: [ChangeContainerStatus, CreateContainer],
-        output_messages: [],
-        phx_routers: [AgmaWeb.Router]
-      ]
+    docs = Docs.generate
 
     {:ok, %{docs: docs}}
   end

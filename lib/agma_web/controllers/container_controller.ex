@@ -5,6 +5,11 @@ defmodule AgmaWeb.ContainerController do
   alias Mahou.Message
   alias Mahou.Message.{ChangeContainerStatus, CreateContainer}
 
+  @doc """
+  Creates a container
+  """
+  @input CreateContainer
+  @output nil
   def create(conn, _) do
     {:ok, body, conn} = read_body conn
     # TODO: lol check ts
@@ -16,6 +21,11 @@ defmodule AgmaWeb.ContainerController do
     json conn, %{}
   end
 
+  @doc """
+  Changes the status of the container, ex. stop, kill, freeze, etc.
+  """
+  @input ChangeContainerStatus
+  @output nil
   def change_status(conn, _) do
     {:ok, body, conn} = read_body conn
     # TODO: lol check ts
